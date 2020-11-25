@@ -1,0 +1,13 @@
+item,country,year,sales
+ITEM1,Russia,“2010”,23
+ITEM1,Russia,“2011”,40
+ITEM1,Russia,“2012”,300
+ITEM1,“Ukraine”,“2010”,11
+ITEM1,“Ukraine”,“2011”,18
+ITEM1,“Ukraine”,“2012”,200
+ITEM2,Russia,“2010”,43
+ITEM2,Russia,“2011”,53
+ITEM2,Russia,“2012”,97
+ITEM2,“Ukraine”,“2010”,13
+ITEM2,“Ukraine”,“2011”,34
+ITEM2,“Ukraine”,“2012”,86
