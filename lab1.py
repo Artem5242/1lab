@@ -37,20 +37,28 @@ def currency_func():
     start = datetime.datetime.strptime("01/03/2020", "%d/%m/%Y")
     end = datetime.datetime.strptime("01/07/2020", "%d/%m/%Y")
     date_generated = [start + datetime.timedelta(days=x) for x in range(0, (end-start).days)]
-    
-    with open("money.csv", "w", newline = "") as file:
-        columns = ["Дата", "Доллар США", "Евро", "Индийская рупия", "Украинская гривна"]
-        writer = csv.DictWriter(file, fieldnames = columns)
+
+    idResp = requests.get("http://www.cbr.ru/scripts/XML_val.asp?d=0")
+    soupParse = BeautifulSoup(idResp.content, 'xml')
+    currenciesId = {currency: soupParse.find("Name", text=currency).parent["ID"] for currency in currencies}
+
+
+    with open("money.csv",'w',newline="") as file:
+        columns = ["Дата"] + currencies
+        writer = csv.DictWriter(file, columns)
         writer.writeheader()
 
         for date in date_generated:
-            resp = requests.get("http://www.cbr.ru/scripts/XML_daily.asp?date_req=" + date.strftime("%d/%m/%Y"))
-            soup = BeautifulSoup(resp.content, "xml")
-            writer.writerow({"Дата": date.strftime("%d/%m/%Y"), "Доллар США": float(soup.find("CharCode", text = "USD").find_next_sibling("Value").get_text().replace(',','.')),
-            "Евро": float(soup.find("CharCode", text = "EUR").find_next_sibling("Value").get_text().replace(',','.')),
-            "Индийская рупия": round(float(soup.find("CharCode", text = "INR").find_next_sibling("Value").get_text().replace(',','.')) / 100, 5),
-            "Украинская гривна": round(float(soup.find("CharCode", text = "UAH").find_next_sibling("Value").get_text().replace(',','.')) / 10, 5)})
+            currencies_price_response = requests.get(f"http://www.cbr.ru/scripts/XML_daily.asp?date_req=" + date.strftime("%d/%m/%Y"))
+            mapRow = {columns[0]:date}
+            soupParse = BeautifulSoup(currencies_price_response.content, 'xml')
 
+            for currency, currencyId in currenciesId.items():
+                value = float(soupParse.find(ID=currencyId).find("Value").get_text().replace(',','.'))
+                nominal = int( soupParse.find(ID=currencyId).find("Nominal").get_text())
+                course = round(value / nominal, 5)
+                mapRow[currency] = course
+            writer.writerow(mapRow)
 def main_func():
     arr = input("Enter the array for task 1: ").split(" ")
     dictionary_func(arr)
